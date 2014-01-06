@@ -1,4 +1,7 @@
+This version includes Windows 8 Event support.
+
 ## Usage
+
 Swipe only needs to follow a simple pattern. Here is an example:
 
 ``` html
@@ -57,6 +60,10 @@ Swipe can take an optional second parameter– an object of key/value settings:
 -	**callback** Function - runs at slide change.
 
 - **transitionEnd** Function - runs at the end slide transition.
+
+Additionally this version has the possibilty to pair elements:
+
+- **pair** Integer , wrapps n elements in a div, useful for responsive usecases
 
 ### Example
 

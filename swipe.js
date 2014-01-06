@@ -30,8 +30,7 @@ function Swipe(container, options) {
       return false;
     })(document.createElement('swipe'))
   };
-  
-  console.log(browser.touch);
+
 
   // quit if no root element
   if (!container) return;
@@ -296,6 +295,11 @@ function Swipe(container, options) {
   var start = {};
   var delta = {};
   var isScrolling;      
+  
+  var preventDefault = function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
 
   // setup event capturing
   var events = {
@@ -350,6 +354,8 @@ function Swipe(container, options) {
         element.addEventListener('touchend', this, false); 
       }
       else {
+        element.removeEventListener("click", preventDefault);
+        
         element.addEventListener('MSPointerMove', this, false);
         element.addEventListener('MSPointerUp', this, false); 
       }
@@ -376,9 +382,13 @@ function Swipe(container, options) {
 
       // if user is not trying to scroll vertically
       if (!isScrolling) {
-
         // prevent native scrolling 
         event.preventDefault();
+        
+        if(isIE && delta.x != 0) {
+          element.removeEventListener("click", preventDefault);
+          element.addEventListener("click", preventDefault);
+        }
 
         // stop slideshow
         stop();
@@ -487,7 +497,7 @@ function Swipe(container, options) {
         }
 
       }
-
+      
       // kill touchmove and touchend event listeners until touchstart called again
       element.removeEventListener('touchmove', events, false);
       element.removeEventListener('touchend', events, false);
@@ -522,7 +532,7 @@ function Swipe(container, options) {
     
     // set touchstart event on element    
     if (browser.touch) {
-      if(window.navigator.msPointerEnabled) element.addEventListener('MSPointerDown', events, false);
+      if(isIE) element.addEventListener('MSPointerDown', events, false);
       else element.addEventListener('touchstart', events, false);
     }
 

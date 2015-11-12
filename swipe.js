@@ -35,7 +35,6 @@ function Swipe(container, options) {
   // quit if no root element
   if (!container) return;
   var element = container.children[0];
-  var saved_markup = "";
   var modified = false;
   var twoIs = false;
   var slides, slidePos, width, length;
@@ -43,15 +42,14 @@ function Swipe(container, options) {
   var index = parseInt(options.startSlide, 10) || 0;
   var speed = options.speed || 300;
   options.continuous = options.continuous !== undefined ? options.continuous : true;
+  
+  var isActive = false;
 
   function setup() {
     //Wrap pairs of elements for each slide
     if(options.pair && !modified) {
-      var elements = element.children;
-      saved_markup = (saved_markup == "") ? element.innerHTML : saved_markup;
-
+      var elements = element.children; // Live NodeList
       var ell = elements.length;
-      var new_slides = new Array();
 
       for (var i = 0; i < ell; i++) {
         
@@ -67,19 +65,13 @@ function Swipe(container, options) {
         if(j > -1) {
           var new_el = document.createElement('div');
           new_el.className = "slide";
-          element.appendChild(new_el);
    
           while (j <= i) {            
-           new_el.appendChild(elements[j].cloneNode(true)); 
+           new_el.appendChild(elements[0]); 
            j++;
           }
-          new_slides.push(new_el.cloneNode(true)); //IE 8 needs cloneNode for some reason..
+          element.appendChild(new_el);
         }
-      }
-      
-      element.innerHTML = "";
-      for (var k = 0; k < new_slides.length; k++) {
-        element.appendChild(new_slides[k].cloneNode(true));
       }
 
       modified = true;
@@ -108,6 +100,8 @@ function Swipe(container, options) {
 
     // determine width of each slide
     width = container.getBoundingClientRect().width || container.offsetWidth;
+    
+    width = Math.ceil(width); //@bm 1px fix
 
     element.style.width = (slides.length * width) + 'px';
 
@@ -134,6 +128,7 @@ function Swipe(container, options) {
     }
 
     if (!browser.transitions) element.style.left = (index * -width) + 'px';
+    
 
     container.style.visibility = 'visible';
     
@@ -201,8 +196,11 @@ function Swipe(container, options) {
     }
 
     index = to;
+    
+    
     offloadFn(options.callback && options.callback(getIndex(), slides[index]));
   }
+  
   
   function getIndex() {
     if(twoIs) {
@@ -212,10 +210,8 @@ function Swipe(container, options) {
   }
 
   function move(index, dist, speed) {
-
     translate(index, dist, speed);
     slidePos[index] = dist;
-
   }
 
   function translate(index, dist, speed) {
@@ -231,10 +227,12 @@ function Swipe(container, options) {
     style.OTransitionDuration = 
     style.transitionDuration = speed + 'ms';
 
-    style.webkitTransform = 'translate(' + dist + 'px,0)' + 'translateZ(0)';
+    style.webkitTransform = 
     style.msTransform = 
     style.MozTransform = 
     style.OTransform = 'translateX(' + dist + 'px)';
+    
+    if(isActive) style.webkitTransform += ' translateZ(0)';
 
   }
 
@@ -278,16 +276,17 @@ function Swipe(container, options) {
   var interval;
 
   function begin() {
-
     interval = setTimeout(next, delay);
-
   }
 
+  function pause() {
+    clearTimeout(interval);
+  }
+  
   function stop() {
-
     delay = 0;
     clearTimeout(interval);
-
+    $(element).addClass('stoped'); //@bm tracking
   }
 
 
@@ -359,7 +358,7 @@ function Swipe(container, options) {
         element.addEventListener('MSPointerMove', this, false);
         element.addEventListener('MSPointerUp', this, false); 
       }
-
+      isActive = true;
     },
     move: function(event) {
       // ensure swiping with one touch and not pinching
@@ -476,7 +475,7 @@ function Swipe(container, options) {
             index = circle(index-1);
 
           }
-
+          
           options.callback && options.callback(getIndex(), slides[index]);
 
         } else {
@@ -495,7 +494,7 @@ function Swipe(container, options) {
           }
 
         }
-
+        isActive = false;
       }
       
       // kill touchmove and touchend event listeners until touchstart called again
@@ -507,7 +506,8 @@ function Swipe(container, options) {
 
     },
     transitionEnd: function(event) {
-
+      isActive = false;
+      
       if (parseInt(event.target.getAttribute('data-index'), 10) == index) {
         
         if (delay) begin();
@@ -595,9 +595,14 @@ function Swipe(container, options) {
       // return total number of slides
       return length;
     },
-    options: options, //make options public to plugins
+    options: options, //make options public to plugins,
+    pause: function() {
+      return pause();
+    },
+    start: function() {
+      return begin();
+    },
     kill: function() {
-
       // cancel slideshow
       stop();
 
@@ -645,12 +650,24 @@ function Swipe(container, options) {
       }
       
       if(modified) {
-        element.innerHTML = saved_markup;
-        saved_markup = "";
+        //restore original status
+        var current_slides = element.querySelectorAll("div.slide");
+        
+        for (var i = 0; i < current_slides.length; ++i) {
+          var node = current_slides[i],
+              parent = node.parentNode;
+              
+              while( node.firstChild ) {
+                  parent.insertBefore(  node.firstChild, node );
+              }
+              parent.removeChild( node );
+        }
+        
         modified = false; 
       }
        
        if ( window.jQuery || window.Zepto ) {
+         $(container).removeData("Swipe");
          $(element).trigger("swipe.kill");
        }
     }

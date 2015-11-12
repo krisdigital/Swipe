@@ -1,4 +1,4 @@
-This version includes Windows 8 Event support.
+### This version includes Windows 8 Event support and the possibility to group elements.
 
 ## Usage
 
@@ -77,7 +77,8 @@ window.mySwipe = new Swipe(document.getElementById('slider'), {
   disableScroll: false,
   stopPropagation: false,
   callback: function(index, elem) {},
-  transitionEnd: function(index, elem) {}
+  transitionEnd: function(index, elem) {},
+  pair: 2
 });
 
 ```

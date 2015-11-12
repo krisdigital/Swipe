@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+  <title>Swipe.js Test</title>
+  <link rel="stylesheet" href="../vendor/qunit-1.18.0.css" type="text/css" media="screen">
+  <style type="text/css" media="screen">
+    .swipe {
+      overflow: hidden;
+      visibility: hidden;
+      position: relative;
+    }
+    .swipe-wrap {
+      overflow: hidden;
+      position: relative;
+    }
+    .swipe-wrap > div {
+      float:left;
+      width:100%;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  
+  
+  <div id='slider' class='swipe'>
+    <div class='swipe-wrap'>
+      <div>Slide 1<button>Button for Events</button></div>
+      <div>Slide 2<button>Button for Events</button></div>
+      <div>Slide 3<button>Button for Events</button></div>
+      <div>Slide 4<button>Button for Events</button></div>
+      <div>Slide 5<button>Button for Events</button></div>
+      <div>Slide 6<button>Button for Events</button></div>
+      <div>Slide 7<button>Button for Events</button></div>
+      <div>Slide 8<button>Button for Events</button></div>
+      <div>Slide 9<button>Button for Events</button></div>  
+    </div>
+  </div>
+  
+  <script src="../vendor/qunit-1.18.0.js" type="text/javascript" charset="utf-8"></script>
+  <script src="http://code.jquery.com/jquery-2.1.4.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="../../swipe.js" type="text/javascript" charset="utf-8"></script>
+  
+  <script src="../unit/swipe.js" type="text/javascript" charset="utf-8"></script>
+</body>

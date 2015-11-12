@@ -286,7 +286,6 @@ function Swipe(container, options) {
   function stop() {
     delay = 0;
     clearTimeout(interval);
-    $(element).addClass('stoped'); //@bm tracking
   }
 
 

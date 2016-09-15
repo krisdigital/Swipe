@@ -1,14 +1,16 @@
 /*
- * Swipe 2.0
+ * Swipe 3.0
  *
  * Brad Birdsall
  * Copyright 2013, MIT License
  *
+ * Krisdigital 2013-2016
+ *
  * @krisdigital
  * Added the possibility to pair slides to groups
  * Added options to the public API
- * Added Windows 8 Touch Event Support 
- *
+ * Added Windows 8 Touch Event Support
+ * Added QUnit Tests
 */
 
 function Swipe(container, options) {
@@ -19,7 +21,7 @@ function Swipe(container, options) {
   var noop = function() {}; // simple no operation function
   var offloadFn = function(fn) { setTimeout(fn || noop, 0) }; // offload a functions execution
   var isIE = window.navigator.msPointerEnabled;
-  
+
   // check browser capabilities
   var browser = {
     addEventListener: !!window.addEventListener,
@@ -42,7 +44,7 @@ function Swipe(container, options) {
   var index = parseInt(options.startSlide, 10) || 0;
   var speed = options.speed || 300;
   options.continuous = options.continuous !== undefined ? options.continuous : true;
-  
+
   var isActive = false;
 
   function setup() {
@@ -52,7 +54,7 @@ function Swipe(container, options) {
       var ell = elements.length;
 
       for (var i = 0; i < ell; i++) {
-        
+
         var j = -1;
         //get starting point for extra div insert
         if(i + 1 == ell && ell % options.pair != 0) { // last elements wrapper
@@ -65,9 +67,9 @@ function Swipe(container, options) {
         if(j > -1) {
           var new_el = document.createElement('div');
           new_el.className = "slide";
-   
-          while (j <= i) {            
-           new_el.appendChild(elements[0]); 
+
+          while (j <= i) {
+           new_el.appendChild(elements[0]);
            j++;
           }
           element.appendChild(new_el);
@@ -76,17 +78,17 @@ function Swipe(container, options) {
 
       modified = true;
     }
-    
+
 
 
     // cache slides
     slides = element.children;
     length = slides.length;
-    
+
 
     // set continuous to false if only one slide
     if (slides.length < 2) options.continuous = false;
-    
+
     //special case if two slides
     if (browser.transitions && options.continuous && slides.length < 3) {
       element.appendChild(slides[0].cloneNode(true));
@@ -100,7 +102,7 @@ function Swipe(container, options) {
 
     // determine width of each slide
     width = container.getBoundingClientRect().width || container.offsetWidth;
-    
+
     width = Math.ceil(width); //@bm 1px fix
 
     element.style.width = (slides.length * width) + 'px';
@@ -128,10 +130,10 @@ function Swipe(container, options) {
     }
 
     if (!browser.transitions) element.style.left = (index * -width) + 'px';
-    
+
 
     container.style.visibility = 'visible';
-    
+
     if(options.callback) options.callback.call(null, getIndex());
   }
 
@@ -160,7 +162,7 @@ function Swipe(container, options) {
 
     // do nothing if already on requested slide
     if (index == to) return;
-    
+
     if (browser.transitions) {
 
       var direction = Math.abs(index-to) / (index-to); // 1: backward, -1: forward
@@ -180,31 +182,31 @@ function Swipe(container, options) {
 
       // move all the slides between index and to in the right direction
       while (diff--) move( circle((to > index ? to : index) - diff - 1), width * direction, 0);
-            
+
       to = circle(to);
 
       move(index, width * direction, slideSpeed || speed);
       move(to, 0, slideSpeed || speed);
 
       if (options.continuous) move(circle(to - direction), -(width * direction), 0); // we need to get the next in place
-      
-    } else {     
-      
+
+    } else {
+
       to = circle(to);
       animate(index * -width, to * -width, slideSpeed || speed);
       //no fallback for a circular continuous if the browser does not accept transitions
     }
 
     index = to;
-    
-    
+
+
     offloadFn(options.callback && options.callback(getIndex(), slides[index]));
   }
-  
-  
+
+
   function getIndex() {
     if(twoIs) {
-     if(index > 1) return index - 2; 
+     if(index > 1) return index - 2;
     }
     return index;
   }
@@ -221,17 +223,17 @@ function Swipe(container, options) {
 
     if (!style) return;
 
-    style.webkitTransitionDuration = 
-    style.MozTransitionDuration = 
-    style.msTransitionDuration = 
-    style.OTransitionDuration = 
+    style.webkitTransitionDuration =
+    style.MozTransitionDuration =
+    style.msTransitionDuration =
+    style.OTransitionDuration =
     style.transitionDuration = speed + 'ms';
 
-    style.webkitTransform = 
-    style.msTransform = 
-    style.MozTransform = 
+    style.webkitTransform =
+    style.msTransform =
+    style.MozTransform =
     style.OTransform = 'translateX(' + dist + 'px)';
-    
+
     if(isActive) style.webkitTransform += ' translateZ(0)';
 
   }
@@ -245,13 +247,13 @@ function Swipe(container, options) {
       return;
 
     }
-    
+
     var start = +new Date;
-    
+
     var timer = setInterval(function() {
 
       var timeElap = +new Date - start;
-      
+
       if (timeElap > speed) {
 
         element.style.left = to + 'px';
@@ -282,7 +284,7 @@ function Swipe(container, options) {
   function pause() {
     clearTimeout(interval);
   }
-  
+
   function stop() {
     delay = 0;
     clearTimeout(interval);
@@ -292,8 +294,8 @@ function Swipe(container, options) {
   // setup initial vars
   var start = {};
   var delta = {};
-  var isScrolling;      
-  
+  var isScrolling;
+
   var preventDefault = function(event) {
     event.preventDefault();
     event.stopPropagation();
@@ -308,7 +310,7 @@ function Swipe(container, options) {
         case 'touchstart': this.start(event); break;
         case 'MSPointerMove':
         case 'touchmove': this.move(event); break;
-        case 'MSPointerUp':        
+        case 'MSPointerUp':
         case 'touchend': offloadFn(this.end(event)); break;
         case 'webkitTransitionEnd':
         case 'msTransitionEnd':
@@ -316,7 +318,7 @@ function Swipe(container, options) {
         case 'otransitionend':
         case 'transitionend': offloadFn(this.transitionEnd(event)); break;
         case 'resize': offloadFn(setup.call()); break;
-      } 
+      }
 
       if (options.stopPropagation) event.stopPropagation();
 
@@ -324,7 +326,7 @@ function Swipe(container, options) {
     start: function(event) {
 
       var touches;
-      
+
       if(!isIE) touches = event.touches[0];
       else touches = event;
 
@@ -339,23 +341,23 @@ function Swipe(container, options) {
         time: +new Date
 
       };
-      
+
       // used for testing first move event
       isScrolling = undefined;
 
       // reset delta and end measurements
       delta = {};
-      
+
       if(!isIE) {
         // attach touchmove and touchend listeners
         element.addEventListener('touchmove', this, false);
-        element.addEventListener('touchend', this, false); 
+        element.addEventListener('touchend', this, false);
       }
       else {
         element.removeEventListener("click", preventDefault);
-        
+
         element.addEventListener('MSPointerMove', this, false);
-        element.addEventListener('MSPointerUp', this, false); 
+        element.addEventListener('MSPointerUp', this, false);
       }
       isActive = true;
     },
@@ -366,7 +368,7 @@ function Swipe(container, options) {
       if (options.disableScroll) event.preventDefault();
 
       var touches = event.touches ? event.touches[0] : event;
-      
+
       // measure change in x and y
       delta = {
         x: touches.pageX - start.x,
@@ -380,9 +382,9 @@ function Swipe(container, options) {
 
       // if user is not trying to scroll vertically
       if (!isScrolling) {
-        // prevent native scrolling 
+        // prevent native scrolling
         event.preventDefault();
-        
+
         if(isIE && delta.x != 0) {
           element.removeEventListener("click", preventDefault);
           element.addEventListener("click", preventDefault);
@@ -400,15 +402,15 @@ function Swipe(container, options) {
 
         } else {
 
-          delta.x = 
-            delta.x / 
+          delta.x =
+            delta.x /
               ( (!index && delta.x > 0               // if first slide and sliding left
                 || index == slides.length - 1        // or if last slide and sliding right
                 && delta.x < 0                       // and if sliding at all
-              ) ?                      
+              ) ?
               ( Math.abs(delta.x) / width + 1 )      // determine resistance level
               : 1 );                                 // no resistance if false
-          
+
           // translate 1:1
           translate(index-1, delta.x + slidePos[index-1], 0);
           translate(index, delta.x + slidePos[index], 0);
@@ -424,18 +426,18 @@ function Swipe(container, options) {
       var duration = +new Date - start.time;
 
       // determine if slide attempt triggers next/prev slide
-      var isValidSlide = 
+      var isValidSlide =
             Number(duration) < 250               // if slide duration is less than 250ms
             && Math.abs(delta.x) > 20            // and if slide amt is greater than 20px
             || Math.abs(delta.x) > width/2;      // or if slide amt is greater than half the width
 
       // determine if slide attempt is past start and end
-      var isPastBounds = 
+      var isPastBounds =
             !index && delta.x > 0                            // if first slide and slide amt is greater than 0
             || index == slides.length - 1 && delta.x < 0;    // or if last slide and slide amt is less than 0
 
       if (options.continuous) isPastBounds = false;
-      
+
       // determine direction of swipe (true:right, false:left)
       var direction = delta.x < 0;
 
@@ -457,8 +459,8 @@ function Swipe(container, options) {
 
             move(index, slidePos[index]-width, speed);
             move(circle(index+1), slidePos[circle(index+1)]-width, speed);
-            index = circle(index+1);  
-                      
+            index = circle(index+1);
+
           } else {
             if (options.continuous) { // we need to get the next in this direction in place
 
@@ -474,7 +476,7 @@ function Swipe(container, options) {
             index = circle(index-1);
 
           }
-          
+
           options.callback && options.callback(getIndex(), slides[index]);
 
         } else {
@@ -495,7 +497,7 @@ function Swipe(container, options) {
         }
         isActive = false;
       }
-      
+
       // kill touchmove and touchend event listeners until touchstart called again
       element.removeEventListener('touchmove', events, false);
       element.removeEventListener('touchend', events, false);
@@ -506,9 +508,9 @@ function Swipe(container, options) {
     },
     transitionEnd: function(event) {
       isActive = false;
-      
+
       if (parseInt(event.target.getAttribute('data-index'), 10) == index) {
-        
+
         if (delay) begin();
 
         options.transitionEnd && options.transitionEnd.call(event, index, slides[index]);
@@ -528,8 +530,8 @@ function Swipe(container, options) {
 
   // add event listeners
   if (browser.addEventListener) {
-    
-    // set touchstart event on element    
+
+    // set touchstart event on element
     if (browser.touch) {
       if(isIE) element.addEventListener('MSPointerDown', events, false);
       else element.addEventListener('touchstart', events, false);
@@ -560,10 +562,10 @@ function Swipe(container, options) {
 
     },
     slide: function(to, speed) {
-      
+
       // cancel slideshow
       stop();
-      
+
       slide(to, speed);
 
     },
@@ -590,7 +592,7 @@ function Swipe(container, options) {
 
     },
     getNumSlides: function() {
-      
+
       // return total number of slides
       return length;
     },
@@ -608,7 +610,7 @@ function Swipe(container, options) {
       // reset element
       element.style.width = 'auto';
       element.style.left = 0;
-      
+
 
       // reset slides
       var pos = slides.length;
@@ -618,7 +620,7 @@ function Swipe(container, options) {
         var slide = slides[pos];
         slide.style.width = '';
         slide.style.left = 0;
-        
+
         if(twoIs && length == 4 && pos > length - 3) {
           slide.parentNode.removeChild(slide);
         }
@@ -626,14 +628,14 @@ function Swipe(container, options) {
         if (browser.transitions) translate(pos, 0, 0);
 
       }
-      
+
 
       // removed event listeners
       if (browser.addEventListener) {
         // remove current event listeners
         element.removeEventListener('touchstart', events, false);
         element.removeEventListener('MSPointerDown', events, false);
-        
+
         element.removeEventListener('webkitTransitionEnd', events, false);
         element.removeEventListener('msTransitionEnd', events, false);
         element.removeEventListener('oTransitionEnd', events, false);
@@ -647,24 +649,24 @@ function Swipe(container, options) {
         window.onresize = null;
 
       }
-      
+
       if(modified) {
         //restore original status
         var current_slides = element.querySelectorAll("div.slide");
-        
+
         for (var i = 0; i < current_slides.length; ++i) {
           var node = current_slides[i],
               parent = node.parentNode;
-              
+
               while( node.firstChild ) {
                   parent.insertBefore(  node.firstChild, node );
               }
               parent.removeChild( node );
         }
-        
-        modified = false; 
+
+        modified = false;
       }
-       
+
        if ( window.jQuery || window.Zepto ) {
          $(container).removeData("Swipe");
          $(element).trigger("swipe.kill");
@@ -683,4 +685,8 @@ if ( window.jQuery || window.Zepto ) {
       });
     }
   })( window.jQuery || window.Zepto )
+}
+
+if ( typeof module === "object" && module.exports ) {
+  module.exports = Swipe;
 }
